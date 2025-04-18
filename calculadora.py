@@ -6,103 +6,410 @@
 #base para apps maiores
 
 import flet as ft #pega as coisas do app
-from flet import colors #pega a função de cor
-from decimal import Decimal
+#função do app
+def main(page: ft.Page):
+    page.window.center()
+    page.title="calculadora do demonio"
+    page.window_height=450
+    page.window_widht=270
+    page.window.always_on_top=True
+    page.window.resizable=True
+    page.update()
+#entrada de valores
+    def entradas(e:ft.KeyboardEvent):
+        print(e.key)
+        if e.shift:
+            match e.key:
+                case "5":
+                    return"%"
+                case "8":
+                    return"*"
+                case "=":
+                    return"+"
+                case "-":
+                    return"-"
+                case "Enter":
+                    return"="
+                case ",":
+                    return"."
+        else:
+            if e.key.isnumeric():
+                return e.key
+            match e.key:
+                case ",":
+                    return"."
+                case "Numpad Multiply":
+                    return"*"
+                case "Numpad Add":
+                    return"+"
+                case "Numpad Subtract":
+                    return"-"
+                case "Numpad Divide":
+                    return"/"
+                case "Numpad Decimal":
+                    return"."
+                case "Numpad 1":
+                    return"1"
+                case "Numpad 2":
+                    return"2"
+                case "Numpad 3":
+                    return"3"
+                case "Numpad 4":
+                    return"4"
+                case "Numpad 5":
+                    return"5"
+                case "Numpad 6":
+                    return"6"
+                case "Numpad 7":
+                    return"7"
+                case "Numpad 8":
+                    return"8" 
+                case "Numpad 9":
+                    return"9" 
+                case "Numpad 0":
+                    return"0" 
+                case "Enter":
+                    return"="
+                case "-":
+                    return"-"
+                case "=":
+                    return"="
+                case"Backspace":
+                    return"<"
+    def tcinput(e):
+        nonlocal novo, operador, num1
+        data = entradas(e)  # Certifique-se que esta função está definida
+    
+        if not hasattr(resul, 'value'):  # Verifica se resul tem a propriedade value
+            resul.value = "0"
+    
+        if data == "AC":
+            resul.value = "0"
+            operador = " "
+            novo = True
+            num1 = -1
+        elif data == ".":
+            if resul.value == "0" or novo:
+                resul.value = "0."
+                novo = False
+            elif "." not in resul.value:
+                resul.value += data
+        elif data == "<":
+            if len(resul.value) > 1:
+                resul.value = resul.value[:-1]
+            else:
+                resul.value = "0"
+                num1 = -1
+                novo = True
+        elif data == "+/-":
+            if resul.value != "0":
+                if "-" in resul.value:
+                    resul.value = resul.value.replace("-", "")
+                else:
+                    resul.value = "-" + resul.value
+        elif data.isdigit():  # Substitui valor(data) por verificação de dígito
+            if resul.value == "0" or novo or operador == "=":
+                resul.value = data
+                novo = False
+                if operador == "=":
+                    operador = " "
+            else:
+                resul.value += data
+    
+        resul.update()  # Certifique-se que resul tem este método
+#calculo
+    def calc(num1,num2,operador):
+        num1=format(num1)
+        num2=format(num2)
+        if operador=="+":
+            resultado=num1+num2
+            return format(resultado)
+        elif operador=="-":
+            resultado=num1-num2
+            return format(resultado)
+        elif operador=="*":
+            resultado=num1*num2
+            return format(resultado)
+        elif operador=="%":
+            resultado=(num1%100)*num2
+            return format(resultado)
+        elif operador=="/":
+            if num2!=0:
+                resultado=num1/num2
+                return format(resultado)
+            else:
+                return 0
+#interação
+    def click(c):
+        nonlocal novo, operador, num1  # Certifique-se que estas variáveis foram declaradas como nonlocal
+    
+        data = c.control.text
+    
+    # Função auxiliar para verificar se é número
+        def is_number(n):
+            try:
+                float(n)
+                return True
+            except ValueError:
+                return False
+    
+        if data == "AC":
+        # Reset completo
+            resul.value = "0"
+            operador = ''
+            novo = True
+            num1 = None  # Melhor usar None do que -1 para indicar ausência de valor
+    
+        elif data == '.':
+        # Tratamento do ponto decimal
+            if novo:
+                resul.value = "0."
+                novo = False
+            elif '.' not in resul.value:
+                resul.value += data
+    
+        elif data == '<':
+        # Backspace
+            if len(resul.value) > 1:
+                resul.value = resul.value[:-1]
+            else:
+                resul.value = "0"
+                novo = True
+    
+        elif data == '+/-':
+        # Troca de sinal
+            if resul.value != "0":
+                if '-' in resul.value:
+                    resul.value = resul.value.replace('-', '')
+                else:
+                    resul.value = '-' + resul.value
+    
+        elif is_number(data):
+        # Dígitos numéricos
+            if resul.value == "0" or novo or operador == '=':
+                resul.value = data
+                novo = False
+                if operador == '=':
+                    operador = ''
+            else:
+                resul.value += data
+    
+        elif data in '+-*/':
+        # Operadores
+            if num1 is None:
+                num1 = float(resul.value)
+                operador = data
+                novo = True
+            else:
+            # Calcula o resultado parcial se já houver uma operação pendente
+                if operador:
+                    resul.value = str(calc(num1, float(resul.value), operador))
+                num1 = float(resul.value)
+                operador = data
+                novo = True
+    
+        elif data == '=':
+        #  Cálculo final
+            if num1 is not None and operador:
+                resul.value = str(calc(num1, float(resul.value), operador))
+            num1 = None
+            operador = ''
+            novo = True
+    
+        resul.update()  # Atualiza a interface
 
-botao1 = [
-    {"op":"AC","fonte":colors.BLACK,"fundo":colors.BLUE_100},
-    {"op":"+/-","fonte":colors.BLACK,"fundo":colors.BLUE_100},
-    {"op":"%","fonte":colors.BLACK,"fundo":colors.BLUE_100},
-    {"op":"/","fonte":colors.WHITE,"fundo":colors.ORANGE},
-    {"op":"7","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"8","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"9","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"*","fonte":colors.WHITE,"fundo":colors.ORANGE},
-    {"op":"4","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"5","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"6","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"-","fonte":colors.WHITE,"fundo":colors.ORANGE},
-    {"op":"1","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"2","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"3","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"+","fonte":colors.WHITE,"fundo":colors.ORANGE},
-    {"op":"0","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":",","fonte":colors.WHITE,"fundo":colors.WHITE24},
-    {"op":"=","fonte":colors.WHITE,"fundo":colors.ORANGE},
+# Função de cálculo (precisa ser definida)
+    def calc(val1, val2, operador):
+        if operador == '+':
+            return val1 + val2
+        elif operador == '-':
+            return val1 - val2
+        elif operador == '*':
+            return val1 * val2
+        elif operador == '/':
+            return val1 / val2 if val2 != 0 else float('nan')  # Trata divisão por zero
+        return val2  # Retorna o segundo valor se não houver operador válido
+
+    def valor(dt,i=False):
+        if i:
+            if dt in ('+','-','*','/','%','='):
+                return True
+        else:
+            if dt in ('1','2','3','4','5','6','7','8','9','0'):
+                return True
+        return False
+    def format(data):
+        data = float(data)
+        if data %1 ==0:
+            return int(data)
+        else:
+            return float(data)
+#variaveis
+    novo = True
+    operador = ''
+    num1 = -1
+
+    page.on_keyboard_event=tcinput
+#butoes construção
+    botoes_ac = [
+
+        {"Valor": 'AC', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_500, "Forma": 2, "Comando": click},
+        {"Valor": '%', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_500, "Forma": 2, "Comando": click},
+        {"Valor": '<', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_500, "Forma": 2, "Comando": click},
+        {"Valor": '+/-', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_500, "Forma": 2, "Comando": click}
+
     ]
 
-def main(page:ft.Page):
-    page.title = "calculadora"
-    page.window_resizable = False#agua
-    page.bgcolor = colors.GREY_300 #cor de fundo
-    page.window_wight = 280
-    page.window_height = 300
-    page.window_always_on_top = True
+    botoes_79 = [
 
-    #resultado= ft.Text(value= '0' , color= colors.WHITE , size= 20)
-    #tela onde ficara os numeros
-    resultado = ft.TextField(
-        value="0",
-        border_color="#FFFFFF",
-        color="#FFFFFF",
-        read_only=True,
-        text_size=30
+        {"Valor": '7', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '8', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '9', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '/', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_ACCENT_400, "Comando": click},
+    ]
+    
+    botoes_46 = [
+
+        {"Valor": '4', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '5', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '6', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '*', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_ACCENT_400, "Comando": click},
+    ]
+
+    botoes_13 = [
+
+        {"Valor": '1', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '2', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '3', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '-', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_ACCENT_400, "Comando": click},
+    ]
+
+    botoes_0 = [
+
+        {"Valor": '.', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '0', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.WHITE70, "Comando": click},
+        {"Valor": '=', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_500, "Comando": click},
+        {"Valor": '+', "Cor": ft.colors.BLACK, "Cor_de_fundo": ft.colors.BLUE_ACCENT_400, "Comando": click},
+    ]
+
+        #Botões
+    bts_ac = [ft.Container(
+        content = ft.FloatingActionButton(text=bts_ac['Valor'], foreground_color=bts_ac['Cor'],
+                                           bgcolor=bts_ac['Cor_de_fundo'], aspect_ratio=bts_ac['Forma'], on_click=bts_ac['Comando']),
+        width=55,
+        height=55,
+        alignment=ft.alignment.center,
+    )   for bts_ac in botoes_ac]
+
+    bts_79 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_79['Valor'], foreground_color=bts_79['Cor'],
+                                         bgcolor=bts_79['Cor_de_fundo'], on_click=bts_79['Comando']),
+        width=55,
+        height=55,
+    )   for bts_79 in botoes_79]
+
+    bts_46 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_46['Valor'], foreground_color=bts_46['Cor'],
+                                         bgcolor=bts_46['Cor_de_fundo'], on_click=bts_46['Comando']),
+        width=55,
+        height=55,
+    )   for bts_46 in botoes_46]
+
+    bts_13 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_13['Valor'], foreground_color=bts_13['Cor'],
+                                         bgcolor=bts_13['Cor_de_fundo'], on_click=bts_13['Comando']),
+        width=55,
+        height=55,
+    )   for bts_13 in botoes_13]
+
+    bts_0 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_0['Valor'], foreground_color=bts_0['Cor'],
+                                         bgcolor=bts_0['Cor_de_fundo'], on_click=bts_0['Comando']),
+        width=55,
+        height=55,
+    )   for bts_0 in botoes_0]
+
+#botões desing
+    bts_ac = [ft.Container(
+        content = ft.FloatingActionButton(text=bts_ac['Valor'], foreground_color=bts_ac['Cor'],
+                                           bgcolor=bts_ac['Cor_de_fundo'], aspect_ratio=bts_ac['Forma'], on_click=bts_ac['Comando']),
+        width=55,
+        height=55,
+        alignment=ft.alignment.center,
+    )   for bts_ac in botoes_ac]
+
+    bts_79 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_79['Valor'], foreground_color=bts_79['Cor'],
+                                         bgcolor=bts_79['Cor_de_fundo'], on_click=bts_79['Comando']),
+        width=55,
+        height=55,
+    )   for bts_79 in botoes_79]
+
+    bts_46 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_46['Valor'], foreground_color=bts_46['Cor'],
+                                         bgcolor=bts_46['Cor_de_fundo'], on_click=bts_46['Comando']),
+        width=55,
+        height=55,
+    )   for bts_46 in botoes_46]
+
+    bts_13 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_13['Valor'], foreground_color=bts_13['Cor'],
+                                         bgcolor=bts_13['Cor_de_fundo'], on_click=bts_13['Comando']),
+        width=55,
+        height=55,
+    )   for bts_13 in botoes_13]
+
+    bts_0 = [ft.Container(
+        content=ft.FloatingActionButton(text=bts_0['Valor'], foreground_color=bts_0['Cor'],
+                                         bgcolor=bts_0['Cor_de_fundo'], on_click=bts_0['Comando']),
+        width=55,
+        height=55,
+    )   for bts_0 in botoes_0]
+#txt
+    resul = ft.Text(
+        value='0',
+        size=40
     )
-
-    def calculate(op,valor_atual):
-
-        try:
-            value=eval(valor_atual)
-            if op == "%":
-                value/=100
-            elif op == "+/-":
-                value = -value
-        except:
-            return "error"
-        digits= min(abs(Decimal(value).as_tuple().exponent ), 5)
-        return format(value, f".{digits}f")
-
-    def select(e):
-        value_atual = resultado.value if resultado.value not in ("0","error") else " "
-        value = e.control.content.value
-        if value.isdigit():
-            value = value_atual + value
-        elif value == 'AC':
-            value = '0'
-        else:
-            if value_atual and value_atual[-1] in ('/','*','+', '-','.'):
-                value_atual = value_atual[:-1]
-                value = value_atual + value
-            if value[-1] in ('=' , '%' , '+/-'):
-                value = calculate(operador = value[-1], value_atual = value_atual)
-
-        resultado.value = value
-        resultado.update()
-
+#linhas
     display = ft.Row(
-        width=250,
-        controls=[resultado],
-        alignment="end"
+        width=270,
+        height=80,
+        controls=[resul],
+        alignment='end',
     )
 
-    botao=[ft.Container(
-        content=ft.Text(value=botao["op"],color=botao["fonte"]),
-        bgcolor=botao["fundo"]if "fundo" in botao else botao.get("fundo", colors.BLUE_100),
-        on_click=select,
-        border_radius=100,
-        height=50,
-        width=50,
-        alignment=ft.alignment.center
-    )for botao in botao1]
-    #hora de por os botões na tela
-
-    keyboard=ft.Row(
-        width=250,
-        wrap=True,
-        controls=botao,
-        alignment="end"
+    l_ac = ft.Row(
+        controls=bts_ac,
+        alignment=ft.alignment.center,
+        spacing=5,
+        height=30
     )
-    page.add(display,keyboard)
+    
+    l_79 = ft.Row(
+        controls=bts_79,
+        alignment=ft.alignment.center,
+        spacing=5
+    )
+    
+    l_46 = ft.Row(
+        controls=bts_46,
+        alignment=ft.alignment.center,
+        spacing=5
+    )
+    
+    l_13 = ft.Row(
+        controls=bts_13,
+        alignment=ft.alignment.center,
+        spacing=5
+    )
+    
+    l_0 = ft.Row(
+        controls=bts_0,
+        alignment=ft.alignment.center,
+        spacing=5
+    )
 
+
+    page.add(display,l_ac,l_79,l_46,l_13, l_0)
 
 ft.app(target=main)
