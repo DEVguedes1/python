@@ -83,7 +83,6 @@ while True:
                 else:
                     for nota in maiores_media:
                         print(f"{nota:.2f}")
-    # Opção 6: Buscar Nota Específica
     elif action == 6:
         if not notas_tuple:
             print("vazio")
